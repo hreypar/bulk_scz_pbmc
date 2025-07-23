@@ -1,0 +1,37 @@
+# this file contains everything to configure the workflow on a global scale.
+# In case of sample based data, it should be complemented by a samples file that contains
+# one row per sample that can easily be parsed via pandas.
+sra_runtable:
+    filename: "config/SraRunTable.csv"
+    runid: "Run"
+    sampid: "Sample Name"
+    layout: "LibraryLayout"
+
+# Samples metadata file
+samples_metadata:
+    filename: "config/pns_samples_metadata.csv"
+    sampid_meta: "geo_accession"
+
+# directory for temps
+local_tmp: "/tmp"
+#tmpdir: "$TMPDIR"
+
+# alignment parameters
+alignment_threads: 12
+
+align_multi_star:
+    genomeDir: "resources/STAR_GRCh38.d1.vd1_gencode.v38"
+    readFilesCommand: "zcat"
+    outFilterMultimapNmax: 500
+    winAnchorMultimapNmax: 500
+    outFilterMultimapScoreRange: 5
+    outSAMattributes: "NH HI AS NM nM MD AS XS"
+    outSAMtype: "BAM Unsorted"
+    quantMode: "GeneCounts"
+    outSAMstrandField: "intronMotif"
+    outSAMunmapped: "Within KeepPairs"
+
+# telescope
+telescope:
+    annotation: "resources/retro.hg38.v1.gtf"
+
