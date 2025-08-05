@@ -1,4 +1,554 @@
 ```{r}
-readRDS("results/dataset/counts.rds") -> all_counts
+# readRDS("results/dataset/counts.rds") -> all_counts
 ```
+
+```{r}
+colnames(all_counts)
+```
+
+```{r}
+all_counts_new <- all_counts[, -which(colnames(all_counts) %in% c("MS_RESPONDER1_12M_GSM7501277", "MS_RESPONDER2_12M_GSM7501279", "MS_RESPONDER3_12M_GSM7501281", "MS_RESPONDER4_12M_GSM7501283", "MS_RESPONDER5_12M_GSM7501285", "MS_NONRESPONDER1_12M_GSM7501287", "MS_NONRESPONDER2_12M_GSM7501289", "MS_NONRESPONDER3_12M_GSM7501291", "MS_NONRESPONDER4_12M_GSM7501293", "MS_NONRESPONDER5_12M_GSM7501295"))]
+```
+
+```{r}
+# readRDS("results/dataset_GBS/counts_GBS.rds") -> all_counts_GBS
+```
+
+```{r}
+total_counts <- cbind(all_counts_GBS, all_counts_new)
+```
+
+```{r}
+filtered_counts <- total_counts[rowSums(total_counts >= 10) > 0, ]
+```
+
+```{r}
+sample_info_MSvsMScontrol <- data.frame(
+sample = c(  "MS_HD1_GSM7501266",
+  "MS_HD2_GSM7501267",
+  "MS_HD3_GSM7501268",
+  "MS_HD4_GSM7501269",
+  "MS_HD5_GSM7501270",
+  "MS_HD6_GSM7501271",
+  "MS_HD7_GSM7501272",
+  "MS_HD8_GSM7501273",
+  "MS_HD9_GSM7501274",
+  "MS_HD10_GSM7501275",
+  "MS_RESPONDER5_BASELINE_GSM7501284",
+  "MS_RESPONDER4_BASELINE_GSM7501282",
+  "MS_RESPONDER3_BASELINE_GSM7501280",
+  "MS_RESPONDER2_BASELINE_GSM7501278",
+  "MS_RESPONDER1_BASELINE_GSM7501276",
+  "MS_NONRESPONDER1_BASELINE_GSM7501286",
+  "MS_NONRESPONDER2_BASELINE_GSM7501288",
+  "MS_NONRESPONDER3_BASELINE_GSM7501290",
+  "MS_NONRESPONDER4_BASELINE_GSM7501292",
+  "MS_NONRESPONDER5_BASELINE_GSM7501294"),
+condition = factor(c(rep("HD", 10), rep("MS", 10)),
+levels = c("HD", "MS"))
+)
+```
+
+```{r}
+sample_info_CFSvsCFScontrol <- data.frame(
+sample = c("CFS_HV_PBMC_101_GSM7989349", "CFS_HV_PBMC_112_GSM7989350", "CFS_HV_PBMC_113_GSM7989351", "CFS_HV_PBMC_115_GSM7989352", "CFS_HV_PBMC_117_GSM7989353", "CFS_HV_PBMC_119_GSM7989354", "CFS_HV_PBMC_120_GSM7989355", "CFS_HV_PBMC_121_GSM7989356", "CFS_PI_PBMC_302_GSM7989357", "CFS_PI_PBMC_305_GSM7989358", "CFS_PI_PBMC_310_GSM7989359", "CFS_PI_PBMC_311_GSM7989360", "CFS_PI_PBMC_312_GSM7989361", "CFS_PI_PBMC_313_GSM7989362", "CFS_PI_PBMC_316_GSM7989363", "CFS_PI_PBMC_319_GSM7989364", "CFS_PI_PBMC_322_GSM7989365", "CFS_HV_PBMC_103_GSM8073643", "CFS_HV_PBMC_104_GSM8073644", "CFS_HV_PBMC_106_GSM8073645", "CFS_HV_PBMC_108_GSM8073646", "CFS_HV_PBMC_109_GSM8073647", "CFS_HV_PBMC_111_GSM8073648", "CFS_HV_PBMC_116_GSM8073649", "CFS_PI_PBMC_308_GSM8073650", "CFS_PI_PBMC_321_GSM8073651", "CFS_PI_PBMC_315_GSM8127667"),
+condition = factor(c(rep("HV", 15), rep("PI", 12)),
+levels = c("HV", "PI"))
+)
+```
+
+```{r}
+sample_info_MSvsGBS <- data.frame(
+sample = c("MS_RESPONDER5_BASELINE_GSM7501284",
+  "MS_RESPONDER4_BASELINE_GSM7501282",
+  "MS_RESPONDER3_BASELINE_GSM7501280",
+  "MS_RESPONDER2_BASELINE_GSM7501278",
+  "MS_RESPONDER1_BASELINE_GSM7501276",
+  "MS_NONRESPONDER1_BASELINE_GSM7501286",
+  "MS_NONRESPONDER2_BASELINE_GSM7501288",
+  "MS_NONRESPONDER3_BASELINE_GSM7501290",
+  "MS_NONRESPONDER4_BASELINE_GSM7501292",
+  "MS_NONRESPONDER5_BASELINE_GSM7501294", "GBS_T1_GSM1869426", "GBS_T2_GSM1869427", "GBS_T3_GSM1869428" ),
+condition = factor(c(rep("MS", 10), rep("GBS", 3)),
+levels = c("MS", "GBS"))
+)
+```
+
+```{r}
+sample_info_CFSvsGBS <- data.frame(
+sample = c("CFS_PI_PBMC_308_GSM8073650", "CFS_PI_PBMC_321_GSM8073651", "CFS_PI_PBMC_315_GSM8127667", "CFS_PI_PBMC_302_GSM7989357", "CFS_PI_PBMC_305_GSM7989358", "CFS_PI_PBMC_310_GSM7989359", "CFS_PI_PBMC_311_GSM7989360", "CFS_PI_PBMC_312_GSM7989361", "CFS_PI_PBMC_313_GSM7989362", "CFS_PI_PBMC_316_GSM7989363", "CFS_PI_PBMC_319_GSM7989364", "CFS_PI_PBMC_322_GSM7989365","GBS_T1_GSM1869426", "GBS_T2_GSM1869427", "GBS_T3_GSM1869428"),
+condition = factor(c(rep("CFS", 12), rep("GBS", 3)),
+levels = c("CFS", "GBS"))
+)
+```
+
+```{r}
+rownames(sample_info_MSvsMScontrol) <- sample_info_MSvsMScontrol$sample
+rownames(sample_info_CFSvsCFScontrol) <- sample_info_CFSvsCFScontrol$sample
+rownames(sample_info_MSvsGBS) <- sample_info_MSvsGBS$sample
+rownames(sample_info_CFSvsGBS) <- sample_info_CFSvsGBS$sample
+```
+
+```{r}
+# List of columns you want
+columns_to_keep <- c(
+  "MS_HD1_GSM7501266",
+  "MS_HD2_GSM7501267",
+  "MS_HD3_GSM7501268",
+  "MS_HD4_GSM7501269",
+  "MS_HD5_GSM7501270",
+  "MS_HD6_GSM7501271",
+  "MS_HD7_GSM7501272",
+  "MS_HD8_GSM7501273",
+  "MS_HD9_GSM7501274",
+  "MS_HD10_GSM7501275",
+  "MS_RESPONDER5_BASELINE_GSM7501284",
+  "MS_RESPONDER4_BASELINE_GSM7501282",
+  "MS_RESPONDER3_BASELINE_GSM7501280",
+  "MS_RESPONDER2_BASELINE_GSM7501278",
+  "MS_RESPONDER1_BASELINE_GSM7501276",
+  "MS_NONRESPONDER1_BASELINE_GSM7501286",
+  "MS_NONRESPONDER2_BASELINE_GSM7501288",
+  "MS_NONRESPONDER3_BASELINE_GSM7501290",
+  "MS_NONRESPONDER4_BASELINE_GSM7501292",
+  "MS_NONRESPONDER5_BASELINE_GSM7501294"
+)
+
+# Subset your matrix
+total_counts_MSvsMScontrol <- total_counts[, columns_to_keep]
+
+
+
+
+
+dds_MSvsMScontrol <- DESeqDataSetFromMatrix(
+countData = total_counts_MSvsMScontrol,
+colData = sample_info_MSvsMScontrol,
+design = ~ condition
+)
+
+dds_MSvsMScontrol <- DESeq(dds_MSvsMScontrol)
+res_MSvsMScontrol <- results(dds_MSvsMScontrol,
+contrast = c("condition", "HD", "MS"),
+alpha = 0.05)
+
+
+res_MSvsMScontrol_df <- as.data.frame(res_MSvsMScontrol)
+res_MSvsMScontrol_df$gene <- rownames(res_MSvsMScontrol_df)
+res_MSvsMScontrol_df$significant <- ifelse(res_MSvsMScontrol_df$padj < 0.05, "Significant", "Not Significant")
+pdf("/efs/projects/MS_CSF_PBMCs_Telescope.git/volcano_plot_MSvsMScontrol.pdf", width = 11, height = 7)
+p <- ggplot(res_MSvsMScontrol_df, aes(x = log2FoldChange, y = -log10(pvalue), color = significant)) +
+geom_point(alpha = 0.6, size = 1.5) +
+scale_color_manual(values = c("Significant" = "red", "Not Significant" = "grey")) +
+theme_bw() +
+labs(x = "Log2 Fold Change",
+y = "-Log10 P-value",
+title = "Volcano Plot") +
+geom_hline(yintercept = -log10(0.05), linetype = "dashed", color = "blue") +
+geom_vline(xintercept = c(-1, 1), linetype = "dashed", color = "gray") +
+geom_text_repel(
+    aes(label=gene),
+    size=3,
+    data=subset(res_MSvsMScontrol_df, padj < 0.05),
+    max.overlaps=20
+  )
+ print(p)
+ dev.off()
+```
+
+```{r}
+columns_to_keep <- c("CFS_HV_PBMC_101_GSM7989349", "CFS_HV_PBMC_112_GSM7989350", "CFS_HV_PBMC_113_GSM7989351", "CFS_HV_PBMC_115_GSM7989352", "CFS_HV_PBMC_117_GSM7989353", "CFS_HV_PBMC_119_GSM7989354", "CFS_HV_PBMC_120_GSM7989355", "CFS_HV_PBMC_121_GSM7989356", "CFS_PI_PBMC_302_GSM7989357", "CFS_PI_PBMC_305_GSM7989358", "CFS_PI_PBMC_310_GSM7989359", "CFS_PI_PBMC_311_GSM7989360", "CFS_PI_PBMC_312_GSM7989361", "CFS_PI_PBMC_313_GSM7989362", "CFS_PI_PBMC_316_GSM7989363", "CFS_PI_PBMC_319_GSM7989364", "CFS_PI_PBMC_322_GSM7989365", "CFS_HV_PBMC_103_GSM8073643", "CFS_HV_PBMC_104_GSM8073644", "CFS_HV_PBMC_106_GSM8073645", "CFS_HV_PBMC_108_GSM8073646", "CFS_HV_PBMC_109_GSM8073647", "CFS_HV_PBMC_111_GSM8073648", "CFS_HV_PBMC_116_GSM8073649", "CFS_PI_PBMC_308_GSM8073650", "CFS_PI_PBMC_321_GSM8073651", "CFS_PI_PBMC_315_GSM8127667"
+)
+
+total_counts_CFSvsCFScontrol <- total_counts[, columns_to_keep]
+
+
+
+
+
+dds_CFSvsCFScontrol <- DESeqDataSetFromMatrix(
+countData = total_counts_CFSvsCFScontrol,
+colData = sample_info_CFSvsCFScontrol,
+design = ~ condition
+)
+
+dds_CFSvsCFScontrol <- DESeq(dds_CFSvsCFScontrol)
+res_CFSvsCFScontrol <- results(dds_CFSvsCFScontrol,
+contrast = c("condition", "HV", "PI"),
+alpha = 0.05)
+
+res_CFSvsCFScontrol_df$expression <- "NS"
+res_CFSvsCFScontrol_df$expression[res_CFSvsCFScontrol_df$log2FoldChange > 1.5 & res_CFSvsCFScontrol_df$padj < 0.05] <- "Overexpressed"
+res_CFSvsCFScontrol_df$expression[res_CFSvsCFScontrol_df$log2FoldChange < -1.5 & res_CFSvsCFScontrol_df$padj < 0.05] <- "Underexpressed"
+
+
+res_CFSvsCFScontrol_df <- as.data.frame(res_CFSvsCFScontrol)
+res_CFSvsCFScontrol_df$gene <- rownames(res_CFSvsCFScontrol_df)
+res_CFSvsCFScontrol_df$significant <- ifelse(res_CFSvsCFScontrol_df$padj < 0.05, "Significant", "Not Significant")
+pdf("/efs/projects/MS_CSF_PBMCs_Telescope.git/volcano_plot_CFSvsCFScontrol.pdf", width = 11, height = 7)
+p <- ggplot(res_CFSvsCFScontrol_df, aes(x = log2FoldChange, y = -log10(pvalue), color = significant)) +
+geom_point(alpha = 0.6, size = 1.5) +
+scale_color_manual(values = c("Not Significant" = "grey")) +
+theme_bw() +
+labs(x = "Log2 Fold Change",
+y = "-Log10 P-value",
+title = "Volcano Plot") +
+geom_hline(yintercept = -log10(0.05), linetype = "dashed", color = "blue") +
+geom_vline(xintercept = c(-1, 1), linetype = "dashed", color = "gray") + 
+  scale_color_manual(values = c(
+    "Overexpressed" = "red", 
+    "Underexpressed" = "blue"))
+geom_text_repel(
+    aes(label=gene),
+    size=3,
+    data=subset(res_CFSvsCFScontrol_df, padj < 0.05),
+    max.overlaps=20
+  )
+ print(p)
+ dev.off()
+```
+
+```{r}
+library(EnhancedVolcano)
+
+png(
+  "/efs/projects/MS_CSF_PBMCs_Telescope.git/volcano_Enhanced_MSvsMScontrol.png",
+  width = 16,              # much wider
+  height = 10,             # nice height
+  units = "in",
+  res = 300
+)
+
+# Optional: add larger plot margins so nothing gets clipped
+par(mar = c(8, 8, 6, 8)) # bottom, left, top, right
+
+EnhancedVolcano(
+  res_CFSvsCFScontrol_df,
+  lab = rownames(res_CFSvsCFScontrol_df),
+  x = 'log2FoldChange',
+  y = 'padj',
+  subtitle = "MS vs Controls",
+  pCutoff = 0.05,
+  FCcutoff = 1.0,                   # Fold change cutoff, change as needed
+  pointSize = 3.5,
+  labSize = 4,
+  titleLabSize = 24,
+  subtitleLabSize = 18,
+  axisLabSize = 14,
+  legendLabSize = 13,
+  legendPosition = 'right',
+  colAlpha = 0.8,                   # how transparent points are
+  boxedLabels = TRUE,               # box around labels
+  drawConnectors = TRUE,            # lines from label to dot
+  widthConnectors = 0.5,            # line thickness
+  colConnectors = 'grey30',
+  caption = "FC cutoff at log2(1); FDR cutoff at 0.05"
+)
+
+dev.off()
+```
+
+```{r}
+library(EnhancedVolcano)
+
+png(
+  "/efs/projects/MS_CSF_PBMCs_Telescope.git/volcano_Enhanced_CFSvsCFScontrol.png",
+  width = 16,              # much wider
+  height = 10,             # nice height
+  units = "in",
+  res = 300
+)
+
+# Optional: add larger plot margins so nothing gets clipped
+par(mar = c(8, 8, 6, 8)) # bottom, left, top, right
+
+EnhancedVolcano(
+  res_CFSvsCFScontrol_df,
+  lab = rownames(res_CFSvsCFScontrol_df),
+  x = 'log2FoldChange',
+  y = 'padj',
+  subtitle = "CFS vs Controls",
+  pCutoff = 0.05,
+  FCcutoff = 1.0,                   # Fold change cutoff, change as needed
+  pointSize = 3.5,
+  labSize = 4,
+  titleLabSize = 24,
+  subtitleLabSize = 18,
+  axisLabSize = 14,
+  legendLabSize = 13,
+  legendPosition = 'right',
+  colAlpha = 0.8,                   # how transparent points are
+  boxedLabels = TRUE,               # box around labels
+  drawConnectors = TRUE,            # lines from label to dot
+  widthConnectors = 0.5,            # line thickness
+  colConnectors = 'grey30',
+  caption = "FC cutoff at log2(1); FDR cutoff at 0.05"
+)
+
+dev.off()
+```
+
+```{r}
+columns_to_keep <- c("MS_RESPONDER5_BASELINE_GSM7501284",
+  "MS_RESPONDER4_BASELINE_GSM7501282",
+  "MS_RESPONDER3_BASELINE_GSM7501280",
+  "MS_RESPONDER2_BASELINE_GSM7501278",
+  "MS_RESPONDER1_BASELINE_GSM7501276",
+  "MS_NONRESPONDER1_BASELINE_GSM7501286",
+  "MS_NONRESPONDER2_BASELINE_GSM7501288",
+  "MS_NONRESPONDER3_BASELINE_GSM7501290",
+  "MS_NONRESPONDER4_BASELINE_GSM7501292",
+  "MS_NONRESPONDER5_BASELINE_GSM7501294", "GBS_T1_GSM1869426", "GBS_T2_GSM1869427", "GBS_T3_GSM1869428" 
+)
+
+total_counts_MSvsGBS <- total_counts[, columns_to_keep]
+
+
+
+
+
+dds_MSvsGBS <- DESeqDataSetFromMatrix(
+countData = total_counts_MSvsGBS,
+colData = sample_info_MSvsGBS,
+design = ~ condition
+)
+
+dds_MSvsGBS <- DESeq(dds_MSvsGBS)
+res_MSvsGBS <- results(dds_MSvsGBS,
+contrast = c("condition", "MS", "GBS"),
+alpha = 0.05)
+```
+
+```{r}
+library(EnhancedVolcano)
+
+png(
+  "/efs/projects/MS_CSF_PBMCs_Telescope.git/volcano_Enhanced_MSvsGBS.png",
+  width = 16,              # much wider
+  height = 10,             # nice height
+  units = "in",
+  res = 300
+)
+
+# Optional: add larger plot margins so nothing gets clipped
+par(mar = c(8, 8, 6, 8)) # bottom, left, top, right
+
+EnhancedVolcano(
+  res_MSvsGBS,
+  lab = rownames(res_MSvsGBS),
+  x = 'log2FoldChange',
+  y = 'padj',
+  subtitle = "MS vs GBS",
+  pCutoff = 0.05,
+  FCcutoff = 1.0,                   # Fold change cutoff, change as needed
+  pointSize = 3.5,
+  labSize = 4,
+  titleLabSize = 24,
+  subtitleLabSize = 18,
+  axisLabSize = 14,
+  legendLabSize = 13,
+  legendPosition = 'right',
+  colAlpha = 0.8,                   # how transparent points are
+  boxedLabels = TRUE,               # box around labels
+  drawConnectors = TRUE,            # lines from label to dot
+  widthConnectors = 0.5,            # line thickness
+  colConnectors = 'grey30',
+  caption = "FC cutoff at log2(1); FDR cutoff at 0.05"
+)
+
+dev.off()
+```
+
+```{r}
+columns_to_keep <- c("CFS_PI_PBMC_308_GSM8073650", "CFS_PI_PBMC_321_GSM8073651", "CFS_PI_PBMC_315_GSM8127667", "CFS_PI_PBMC_302_GSM7989357", "CFS_PI_PBMC_305_GSM7989358", "CFS_PI_PBMC_310_GSM7989359", "CFS_PI_PBMC_311_GSM7989360", "CFS_PI_PBMC_312_GSM7989361", "CFS_PI_PBMC_313_GSM7989362", "CFS_PI_PBMC_316_GSM7989363", "CFS_PI_PBMC_319_GSM7989364", "CFS_PI_PBMC_322_GSM7989365", "GBS_T1_GSM1869426", "GBS_T2_GSM1869427", "GBS_T3_GSM1869428" 
+)
+
+total_counts_CFSvsGBS <- total_counts[, columns_to_keep]
+
+
+
+
+
+dds_CFSvsGBS <- DESeqDataSetFromMatrix(
+countData = total_counts_CFSvsGBS,
+colData = sample_info_CFSvsGBS,
+design = ~ condition
+)
+
+dds_CFSvsGBS <- DESeq(dds_CFSvsGBS)
+res_CFSvsGBS <- results(dds_CFSvsGBS,
+contrast = c("condition", "CFS", "GBS"),
+alpha = 0.05)
+```
+
+```{r}
+library(EnhancedVolcano)
+
+png(
+  "/efs/projects/MS_CSF_PBMCs_Telescope.git/volcano_Enhanced_CFSvsGBS.png",
+  width = 16,              # much wider
+  height = 10,             # nice height
+  units = "in",
+  res = 300
+)
+
+# Optional: add larger plot margins so nothing gets clipped
+par(mar = c(8, 8, 6, 8)) # bottom, left, top, right
+
+EnhancedVolcano(
+  res_CFSvsGBS,
+  lab = rownames(res_CFSvsGBS),
+  x = 'log2FoldChange',
+  y = 'padj',
+  subtitle = "CFS vs GBS",
+  pCutoff = 0.05,
+  FCcutoff = 1.0,                   # Fold change cutoff, change as needed
+  pointSize = 3.5,
+  labSize = 4,
+  titleLabSize = 24,
+  subtitleLabSize = 18,
+  axisLabSize = 14,
+  legendLabSize = 13,
+  legendPosition = 'right',
+  colAlpha = 0.8,                   # how transparent points are
+  boxedLabels = TRUE,               # box around labels
+  drawConnectors = TRUE,            # lines from label to dot
+  widthConnectors = 0.5,            # line thickness
+  colConnectors = 'grey30',
+  caption = "FC cutoff at log2(1); FDR cutoff at 0.05", 
+  maxoverlapsConnectors = 100
+)
+
+dev.off()
+
+```
+
+# MS vs Control
+```{r}
+res_MSvsMScontrol_df <- merge(res_MSvsMScontrol_df, 
+                features[, c("gene.name", "gene.type")], 
+                by.x = "gene", 
+                by.y = "gene.name", 
+                all.x = TRUE)
+
+# Define significance based on new criteria
+res_MSvsMScontrol_df$expression <- "NS"
+res_MSvsMScontrol_df$expression[res_MSvsMScontrol_df$log2FoldChange > 1.5 & res_MSvsMScontrol_df$padj < 0.05] <- "Overexpressed"
+res_MSvsMScontrol_df$expression[res_MSvsMScontrol_df$log2FoldChange < -1.5 & res_MSvsMScontrol_df$padj < 0.05] <- "Underexpressed"
+res_MSvsMScontrol_df$to_label <- FALSE
+res_MSvsMScontrol_df$to_label[(res_MSvsMScontrol_df$gene.type %in% c("LINE", "LTR")) & 
+                  (res_MSvsMScontrol_df$log2FoldChange > 2.25 | res_MSvsMScontrol_df$log2FoldChange < -2.25) & 
+                  res_MSvsMScontrol_df$pvalue < 0.01] <- TRUE
+res_MSvsMScontrol_df$label_gene <- res_MSvsMScontrol_df$expression != "NS" | res_MSvsMScontrol_df$to_label
+
+
+# Create a new color column that includes black for labeled but not significant points
+res_MSvsMScontrol_df$point_color <- res_MSvsMScontrol_df$expression
+res_MSvsMScontrol_df$point_color[res_MSvsMScontrol_df$to_label & res_MSvsMScontrol_df$expression == "NS"] <- "Labeled_NS"
+res_MSvsMScontrol_df <- res_MSvsMScontrol_df[, !duplicated(names(res_MSvsMScontrol_df))]
+png(
+  "/efs/projects/MS_CSF_PBMCs_Telescope.git/volcano_plot_MSvsMScontrol.png",
+  width = 16,           
+  height = 10,             
+  units = "in",
+  res = 300
+)
+pvol <- ggplot(res_MSvsMScontrol_df, aes(x = log2FoldChange, y = -log10(padj))) +
+  theme_bw()  +
+  labs(x = "Log2 Fold Change",
+       y = "-Log10 P-value (Adjusted)",
+       title = "Volcano Plot of Differential Gene Expression: MS vs Control",
+       color = "Expression",
+       shape = "Gene Type") +
+  geom_hline(yintercept = -log10(0.05), linetype = "dashed", color = "grey66", linewidth = 0.35) +
+  geom_vline(xintercept = c(-2, 2), linetype = "dashed", color = "grey66", linewidth = 0.35) +
+  # Add points with different shapes for gene types
+  geom_point(aes(color = point_color, shape = gene.type.x), 
+             alpha = 0.75, size = 1.5) +
+  scale_color_manual(values = c("Overexpressed" = "red", 
+                                "Underexpressed" = "blue",
+                                "NS" = "grey",
+                                "Labeled_NS" = "darkgrey"),
+                     breaks = c("Overexpressed", "Underexpressed")) +
+  # Add labels for both significant genes and LINE/LTR genes meeting criteria
+  geom_text_repel(
+    data = subset(res_MSvsMScontrol_df, label_gene == TRUE),
+    aes(label = gene),
+    size = 3,
+    max.overlaps = 100, 
+    box.padding = 0.5,
+    force = 10, segment.size = 0.4,
+    segment.color = "grey78"
+  ) +
+  scale_shape_manual(values = c("CG" = 16, "LINE" = 17, "LTR" = 18)) 
+
+print(pvol)
+
+dev.off()
+```
+
+# CFS vs Control
+```{r}
+res_CFSvsCFScontrol_df <- merge(res_CFSvsCFScontrol_df, 
+                features[, c("gene.name", "gene.type")], 
+                by.x = "gene", 
+                by.y = "gene.name", 
+                all.x = TRUE)
+
+# Define significance based on new criteria
+res_CFSvsCFScontrol_df$expression <- "NS"
+res_CFSvsCFScontrol_df$expression[res_CFSvsCFScontrol_df$log2FoldChange > 1.5 & res_CFSvsCFScontrol_df$padj < 0.05] <- "Overexpressed"
+res_CFSvsCFScontrol_df$expression[res_CFSvsCFScontrol_df$log2FoldChange < -1.5 & res_CFSvsCFScontrol_df$padj < 0.05] <- "Underexpressed"
+res_CFSvsCFScontrol_df$to_label <- FALSE
+res_CFSvsCFScontrol_df$to_label[(res_CFSvsCFScontrol_df$gene.type %in% c("LINE", "LTR")) & 
+                  (res_CFSvsCFScontrol_df$log2FoldChange > 2.25 | res_CFSvsCFScontrol_df$log2FoldChange < -2.25) & 
+                  res_CFSvsCFScontrol_df$pvalue < 0.01] <- TRUE
+res_CFSvsCFScontrol_df$label_gene <- res_CFSvsCFScontrol_df$expression != "NS" | res_CFSvsCFScontrol_df$to_label
+
+
+# Create a new color column that includes black for labeled but not significant points
+res_CFSvsCFScontrol_df$point_color <- res_CFSvsCFScontrol_df$expression
+res_CFSvsCFScontrol_df$point_color[res_CFSvsCFScontrol_df$to_label & res_CFSvsCFScontrol_df$expression == "NS"] <- "Labeled_NS"
+res_CFSvsCFScontrol_df <- res_CFSvsCFScontrol_df[, !duplicated(names(res_CFSvsCFScontrol_df))]
+png(
+  "/efs/projects/MS_CSF_PBMCs_Telescope.git/volcano_plot_CFSvsCFScontrol.png",
+  width = 16,           
+  height = 10,             
+  units = "in",
+  res = 300
+)
+pvol <- ggplot(res_CFSvsCFScontrol_df, aes(x = log2FoldChange, y = -log10(padj))) +
+  theme_bw() +
+  labs(x = "Log2 Fold Change",
+       y = "-Log10 P-value (Adjusted)",
+       title = "Volcano Plot of Differential Gene Expression: CFS vs Control",
+       color = "Expression",
+       shape = "Gene Type") +
+  geom_hline(yintercept = -log10(0.05), linetype = "dashed", color = "grey66", linewidth = 0.35) +
+  geom_vline(xintercept = c(-2, 2), linetype = "dashed", color = "grey66", linewidth = 0.35) +
+  # Add points with different shapes for gene types
+  geom_point(aes(color = point_color, shape = gene.type), 
+             alpha = 0.75, size = 1.5) +
+  scale_color_manual(values = c("Overexpressed" = "red", 
+                                "Underexpressed" = "blue",
+                                "NS" = "grey",
+                                "Labeled_NS" = "darkgrey"),
+                     breaks = c("Overexpressed", "Underexpressed")) +
+  # Add labels for both significant genes and LINE/LTR genes meeting criteria
+  geom_text_repel(
+    data = subset(res_CFSvsCFScontrol_df, label_gene == TRUE),
+    aes(label = gene),
+    size = 3,
+    max.overlaps = 100, 
+    box.padding = 0.5,
+    force = 10, segment.size = 0.4,
+    segment.color = "grey78"
+  ) +
+  scale_shape_manual(values = c("CG" = 16, "LINE" = 17, "LTR" = 18)) 
+
+print(pvol)
+
+dev.off()
+```
+
 
