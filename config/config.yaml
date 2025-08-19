@@ -9,7 +9,7 @@ sra_runtable:
 
 # Samples metadata file
 samples_metadata:
-    filename: "config/pns_samples_metadata.csv"
+    filename: "config/scz_samples_metadata.csv"
     sampid_meta: "geo_accession"
 
 # directory for temps

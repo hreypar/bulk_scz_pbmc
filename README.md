@@ -1,2 +1,6 @@
-# PNS_PBMCs_Telescope
-hi 
+# SCZ Telescope
+
+SCZ and Controls 
+
+Bulk RNA-seq analysis
+ 
