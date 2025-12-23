@@ -673,12 +673,12 @@ create_enhanced_volcano <- function(padj_thresh = 0.01, lfc_thresh = 0.5, top_n 
   
   # Define colors
   colors <- c(
-    "CG" = "#2E86AB",      # Blue for canonical
-    "LINE" = "#F24236",    # Red for LINE  
-    "LTR" = "#F6AE2D"      # Gold for LTR
+    "CG" = "steelblue2",      # Blue for canonical
+    "LINE" = "darkorange",    # Red for LINE  
+    "LTR" = "gold3"      # Gold for LTR
   )
   
-  # Create the plot
+    # Create the plot
   p <- ggplot(plot_data, aes(x = log2FoldChange, y = -log10(padj))) +
     
     # Background points (not significant)
@@ -902,3 +902,151 @@ create_top50_heatmap <- function(res_all, vsd_data, method = "combined_score", n
 # Top 50 by combined score (significance × effect size)
 p1 <- create_top50_heatmap(res_all, vsd, method = "combined_score", n_genes = 50)
 
+
+
+
+
+
+###########################################
+# BOXPLOT FOR SPECIFIC GENE/FEATURE      #
+###########################################
+
+plot_gene_expression <- function(gene_name, vsd_data, res_all, samples_metadata) {
+  
+  # Check if gene exists
+  if (!gene_name %in% rownames(vsd_data)) {
+    cat("Gene", gene_name, "not found in data\n")
+    return(NULL)
+  }
+  
+  # Get VST expression data for the gene
+  gene_expr <- assay(vsd_data)[gene_name, ]
+  
+  # Get gene info from results
+  gene_info <- res_all[gene_name, ]
+  gene_type <- gene_info$gene_type
+  log2fc <- round(gene_info$log2FoldChange, 2)
+  padj <- gene_info$padj
+  
+  # Format p-value
+  if (padj < 0.001) {
+    padj_text <- sprintf("p < 0.001")
+  } else {
+    padj_text <- sprintf("p = %.3f", padj)
+  }
+  
+  # Create data frame for plotting
+  plot_data <- data.frame(
+    Expression = gene_expr,
+    Phenotype = samples_metadata$phenotype,
+    Sample = names(gene_expr)
+  )
+  
+  # Convert gene type for display
+  gene_type_display <- ifelse(gene_type == "LTR", "HERV", 
+                              ifelse(gene_type == "LINE", "L1", 
+                                     ifelse(gene_type == "CG", "Canonical", gene_type)))
+  
+  # Create boxplot
+  library(ggplot2)
+  
+  p <- ggplot(plot_data, aes(x = Phenotype, y = Expression, fill = Phenotype)) +
+    geom_boxplot(alpha = 0.7, outlier.shape = NA) +
+    geom_jitter(width = 0.2, height = 0, alpha = 0.6, size = 2) +
+    scale_fill_manual(values = phenotype_colors) +
+    labs(
+      title = sprintf("%s (%s)", gene_name, gene_type_display),
+      subtitle = sprintf("log2FC = %s, %s", log2fc, padj_text),
+      x = "Phenotype",
+      y = "VST Expression",
+      caption = "Points represent individual samples"
+    ) +
+    theme_bw() +
+    theme(
+      plot.title = element_text(size = 14, face = "bold"),
+      plot.subtitle = element_text(size = 12),
+      axis.title = element_text(size = 12),
+      axis.text = element_text(size = 11),
+      legend.position = "none"
+    ) +
+    stat_summary(fun = mean, geom = "point", shape = 18, size = 4, color = "black")
+  
+  # Add significance stars
+  if (padj < 0.001) {
+    sig_label <- "***"
+  } else if (padj < 0.01) {
+    sig_label <- "**"
+  } else if (padj < 0.05) {
+    sig_label <- "*"
+  } else {
+    sig_label <- "ns"
+  }
+  
+  # Add significance annotation
+  y_max <- max(plot_data$Expression) + 0.1 * diff(range(plot_data$Expression))
+  p <- p + annotate("text", x = 1.5, y = y_max, label = sig_label, size = 6, fontface = "bold")
+  
+  return(p)
+}
+
+###########################################
+# PLOT MULTIPLE GENES AT ONCE            #
+###########################################
+
+plot_multiple_genes <- function(gene_list, vsd_data, res_all, samples_metadata, ncol = 2) {
+  
+  library(gridExtra)
+  
+  # Create list of plots
+  plot_list <- lapply(gene_list, function(gene) {
+    plot_gene_expression(gene, vsd_data, res_all, samples_metadata)
+  })
+  
+  # Remove NULL plots (genes not found)
+  plot_list <- plot_list[!sapply(plot_list, is.null)]
+  
+  if (length(plot_list) == 0) {
+    cat("No valid genes found\n")
+    return(NULL)
+  }
+  
+  # Arrange plots
+  grid.arrange(grobs = plot_list, ncol = ncol)
+}
+
+###########################################
+
+# Plot single gene
+#p1 <- plot_gene_expression("CD83", vsd, res_all, samples_metadata)
+#print(p1)
+
+# Save single plot
+#ggsave(fig_path("boxplot_CD83.png"), p1, width = 6, height = 5, dpi = 300)
+
+# Plot multiple interesting genes
+df_res_all_sig <- as.data.frame(res_all_significant)
+df_res_all_sig <- df_res_all_sig[order(df_res_all_sig$padj), ]
+
+interesting_genes <- head(df_res_all_sig$gene_name, 6)
+
+# Create and save multi-panel plot
+png(fig_path("boxplot_top_genes.png"), width = 12, height = 10, units = "in", res = 300)
+plot_multiple_genes(interesting_genes, vsd, res_all, samples_metadata, ncol = 3)
+dev.off()
+
+interesting_tes <- head(df_res_all_sig[df_res_all_sig$gene_type %in% c("LINE", "LTR"), "gene_name"], 6)
+
+# Create and save multi-panel plot
+png(fig_path("boxplot_top_tes.png"), width = 12, height = 10, units = "in", res = 300)
+plot_multiple_genes(interesting_tes, vsd, res_all, samples_metadata, ncol = 3)
+dev.off()
+
+# Create and save multi-panel plot
+png(fig_path("boxplot_GJB.png"), width = 12, height = 10, units = "in", res = 300)
+plot_multiple_genes(c("GJB6", "GJB2"), vsd, res_all, samples_metadata, ncol = 2)
+dev.off()
+
+# just specify any gene name
+gene_of_interest <- "CD83"  
+p <- plot_gene_expression(gene_of_interest, vsd, res_all, samples_metadata)
+print(p)
